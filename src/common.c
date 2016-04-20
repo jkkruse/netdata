@@ -17,6 +17,10 @@
 #include "appconfig.h"
 #include "../config.h"
 
+/* Need defines for Solaris */
+#define O_NOATIME 0
+#define MADV_DONTFORK 0
+
 char *global_host_prefix = "";
 int enable_ksm = 1;
 
@@ -487,6 +491,9 @@ void get_HZ(void)
 
 pid_t gettid(void)
 {
+        /* I'll work on this later 
 	return syscall(SYS_gettid);
+        */
+        return 1;
 }
 

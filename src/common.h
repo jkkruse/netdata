@@ -31,7 +31,10 @@ extern char *global_host_prefix;
 extern int enable_ksm;
 
 /* Number of ticks per second */
+/* Need Solaris define 
 #define HZ        myhz
+*/
+
 extern unsigned int hz;
 extern void get_HZ(void);
 

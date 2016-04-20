@@ -14,7 +14,9 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/mman.h>
+#ifdef HAVE_PRCTL
 #include <sys/prctl.h>
+#endif
 
 #include "common.h"
 #include "log.h"
@@ -304,7 +306,9 @@ int main(int argc, char **argv)
 			struct rlimit rl = { RLIM_INFINITY, RLIM_INFINITY };
 			if(setrlimit(RLIMIT_CORE, &rl) != 0)
 				info("Cannot request unlimited core dumps for debugging... Proceeding anyway...");
+#ifdef HAVE_PRCTL
 			prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
+#endif
 		}
 
 		// --------------------------------------------------------------------
@@ -478,7 +482,9 @@ int main(int argc, char **argv)
 		if(setrlimit(RLIMIT_CORE, &rl) != 0)
 			info("Cannot request unlimited core dumps for debugging... Proceeding anyway...");
 
+#ifdef HAVE_PRCTL
 		prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
+#endif
 	}
 
 	if(output_log_syslog || error_log_syslog || access_log_syslog)

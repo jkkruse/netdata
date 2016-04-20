@@ -17,6 +17,11 @@
 #include <grp.h>
 #include <ctype.h>
 
+#define SENDFILE 1
+#ifdef SENDFILE
+#include <sys/sendfile.h>
+#endif
+
 #include "common.h"
 #include "log.h"
 #include "appconfig.h"
@@ -1047,6 +1052,9 @@ void web_client_process(struct web_client *w) {
 	int code = 500;
 	ssize_t bytes;
 	int enable_gzip = 0;
+#ifdef SENDFILE
+	off_t offset = 0;
+#endif
 
 	w->wait_receive = 0;
 
@@ -1526,16 +1534,17 @@ void web_client_process(struct web_client *w) {
 				debug(D_WEB_CLIENT, "%llu: Done preparing the response. Will be sending data file of %d bytes to client.", w->id, w->response.rlen);
 				w->wait_receive = 1;
 
-				/*
+#ifdef SENDFILE
+				
 				// utilize the kernel sendfile() for copying the file to the socket.
 				// this block of code can be commented, without anything missing.
 				// when it is commented, the program will copy the data using async I/O.
 				{
-					long len = sendfile(w->ofd, w->ifd, NULL, w->response.data->rbytes);
-					if(len != w->response.data->rbytes) error("%llu: sendfile() should copy %ld bytes, but copied %ld. Falling back to manual copy.", w->id, w->response.data->rbytes, len);
+					long len = sendfile(w->ofd, w->ifd, offset, w->response.rlen);
+					if(len != w->response.rlen) error("%llu: sendfile() should copy %ld bytes, but copied %ld. Falling back to manual copy.", w->id, w->response.rlen, len);
 					else web_client_reset(w);
 				}
-				*/
+#endif
 			}
 			else
 				debug(D_WEB_CLIENT, "%llu: Done preparing the response. Will be sending an unknown amount of bytes to client.", w->id);

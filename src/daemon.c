@@ -24,6 +24,9 @@
 #include "main.h"
 #include "daemon.h"
 
+#define HAVE_SETREGID 1
+#define HAVE_SETREUID 1
+
 char pidfile[FILENAME_MAX + 1] = "";
 int pidfd = -1;
 
@@ -102,15 +105,29 @@ int become_user(const char *username)
 		pidfd = -1;
 	}
 
+#if HAVE_SETRESGID
 	if(setresgid(gid, gid, gid) != 0) {
 		error("Cannot switch to user's %s group (gid: %d).", username, gid);
 		return -1;
 	}
+#elif HAVE_SETREGID
+        if(setregid(gid, gid) != 0) {
+               error("Cannot switch to user's %s group (gid: %d).", username, gid);
+               return -1;
+       }
+#endif
 
+#if HAVE_SETRESUID
 	if(setresuid(uid, uid, uid) != 0) {
 		error("Cannot switch to user %s (uid: %d).", username, uid);
 		return -1;
 	}
+#elif HAVE_SETREUID
+       if(setreuid(uid, uid) != 0) {
+               error("Cannot switch to user %s (uid: %d).", username, uid);
+               return -1;
+       }
+#endif
 
 	if(setgid(gid) != 0) {
 		error("Cannot switch to user's %s group (gid: %d).", username, gid);
